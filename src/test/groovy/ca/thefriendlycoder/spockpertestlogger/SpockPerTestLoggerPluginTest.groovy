@@ -19,6 +19,6 @@ class SpockPerTestLoggerPluginTest extends Specification {
         project.plugins.apply("ca.thefriendlycoder.spockpertestlogger")
 
         then:
-        project.tasks.findByName("greeting") != null
+        project.tasks.named("ptlShowErrors") != null
     }
 }

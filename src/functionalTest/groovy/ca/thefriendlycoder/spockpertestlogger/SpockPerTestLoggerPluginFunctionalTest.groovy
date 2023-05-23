@@ -35,11 +35,11 @@ plugins {
         def runner = GradleRunner.create()
         runner.forwardOutput()
         runner.withPluginClasspath()
-        runner.withArguments("greeting")
+        runner.withArguments("ptlShowErrors")
         runner.withProjectDir(projectDir)
         def result = runner.build()
 
         then:
-        result.output.contains("Hello from plugin 'spockpertestlogger.greeting'")
+        result.output.contains("Showing test errors")
     }
 }

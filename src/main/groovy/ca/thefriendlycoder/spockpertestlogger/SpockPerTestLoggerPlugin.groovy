@@ -11,10 +11,14 @@ import org.gradle.api.Plugin
  */
 class SpockPerTestLoggerPlugin implements Plugin<Project> {
     void apply(Project project) {
-        // Register a task
-        project.tasks.register("greeting") {
+        // TODO: iterate over all collections that derive from "test" and add our plugin to it
+        /**
+         * Shows log output for failed tests
+         */
+        project.tasks.register("ptlShowErrors") {
             doLast {
-                println("Hello from plugin 'spockpertestlogger.greeting'")
+                // TODO: iterate over all files in the log folder, and cat them to stdout
+                println("Showing test errors")
             }
         }
     }

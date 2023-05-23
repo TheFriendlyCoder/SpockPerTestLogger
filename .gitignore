@@ -21,6 +21,3 @@ gradle-app.setting
 .classpath
 # JetBrains generated files
 .idea
-
-# Ignore Gradle build output directory
-build
