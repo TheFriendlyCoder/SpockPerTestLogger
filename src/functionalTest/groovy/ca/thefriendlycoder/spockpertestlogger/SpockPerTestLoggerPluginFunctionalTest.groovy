@@ -3,9 +3,14 @@
  */
 package ca.thefriendlycoder.spockpertestlogger
 
+import org.slf4j.LoggerFactory
+import org.spockframework.runtime.ExtensionClassesLoader
 import spock.lang.Specification
 import spock.lang.TempDir
 import org.gradle.testkit.runner.GradleRunner
+import spock.util.EmbeddedSpecCompiler
+import spock.util.EmbeddedSpecRunner
+import org.junit.platform.testkit.engine.Events
 
 /**
  * A simple functional test for the 'spockpertestlogger.greeting' plugin.
@@ -41,5 +46,51 @@ plugins {
 
         then:
         result.output.contains("Showing test errors")
+    }
+
+    def "can run test"() {
+        when:
+        LoggerFactory.getLogger(SpockPerTestLoggerPluginTest.class).error("KSP was here in unit test")
+        LoggerFactory.getLogger(SpockPerTestLoggerPluginTest.class).error("KSP2 was here in unit test")
+        println("KSP was ehre")
+        def specRunner = new EmbeddedSpecRunner()
+//        def compiler = new EmbeddedSpecCompiler()
+//        compiler.addClassImport(SpockPerTestLoggerExtension)
+        specRunner.throwFailure = false
+        specRunner.configurationScript {
+            PerTestLogger {
+                logPath "/tmp/kspwashere"
+            }
+        }
+
+        //def e = new ExtensionClassesLoader()
+        //specRunner.configClasses = List.of(SpockConfig.class)
+        specRunner.addClassImport(SpockPerTestLoggerExtension)
+
+        def src = '''
+package ca.thefriendlycoder.spockpertestlogger
+import spock.lang.Specification
+import org.slf4j.LoggerFactory
+
+class fubar extends Specification {
+
+    void "test method"() {
+        expect:
+        println("Inside fake unit test")
+        LoggerFactory.getLogger("").info("KSP was here in logging")
+    }
+}
+'''
+        println("about to run...")
+        def a = specRunner.runClass(SampleTest)
+//          .testEvents()
+//          .debug() // optional
+//          .assertStatistics(stats -> stats.failed(0))
+        println("done...")
+        def asdfasdfwf = a.toString()
+        println(asdfasdfwf)
+
+        then:
+        true
     }
 }

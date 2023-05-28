@@ -11,7 +11,7 @@ plugins {
     // Development Plugin (java-gradle-plugin) and the Maven Publish plugin
     // (maven-publish).
     // https://docs.gradle.org/current/userguide/java_gradle_plugin.html
-    id 'com.gradle.plugin-publish' version '1.2.0'
+    //id 'com.gradle.plugin-publish' version '1.2.0'
 
     // Add support for compiling Groovy projects
     id 'groovy'
@@ -24,37 +24,57 @@ repositories {
     // Use Maven Central for resolving dependencies.
     mavenCentral()
 }
-dependencies {
-    api platform("org.spockframework:spock-bom:2.0-groovy-3.0")
-    implementation ("org.spockframework:spock-core")
-    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.4.7'
+def junitVersion = "5.8.1"
 
-    // Use the awesome Spock testing and specification framework
+dependencies {
+    // Specify that our plugin requires Spock v2.0 with compatible build for Groovy 3.0
+    // without actually providing an explicit dependency on just one version.
+    // TBD: this should trigger an error if someone tries to enable our plugin without also
+    //      including Spock and Groovy dependencies
+    //api platform("org.spockframework:spock-bom:2.0-groovy-3.0")
+
+    // Dependencies needed by the production code
+    implementation ("org.spockframework:spock-core:2.0-groovy-3.0")
+    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.4.7'
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.7'
+
+    // Dependencies required by test framework
     testImplementation group: 'org.spockframework', name: 'spock-core', version: '2.4-M1-groovy-3.0'
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
+    testImplementation "org.junit.platform:junit-platform-testkit:1.10+"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter:${junitVersion}"
+
+    // TODO: find some way to inject this into the embedded spock runner
+    testImplementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.4.7'
+    testImplementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.7'
 }
 
 group = 'ca.thefriendlycoder'
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 //                                                       Gradle Plugin Config
-gradlePlugin {
-    // Define the plugin
-    website = 'https://github.com/TheFriendlyCoder/SpockPerTestLogger'
-    vcsUrl = 'https://github.com/TheFriendlyCoder/SpockPerTestLogger'
-    plugins {
-        SpockPerTestLoggerPlugin {
-            id = "${group}.spockpertestlogger"
-            displayName = 'Spock Per-Test Logger Plugin'
-            description = 'Spock extension that stores log output for each test in its own file on disk.'
-            implementationClass = "${group}.spockpertestlogger.SpockPerTestLoggerPlugin"
-            tags.set(['spock', 'spock framework', 'groovy', 'java', 'testing', 'test', 'logging', 'log', 'thefriendlycoder', 'tfc'])
-        }
-    }
-}
+//gradlePlugin {
+//    // Define the plugin
+//    website = 'https://github.com/TheFriendlyCoder/SpockPerTestLogger'
+//    vcsUrl = 'https://github.com/TheFriendlyCoder/SpockPerTestLogger'
+//    plugins {
+//        SpockPerTestLoggerPlugin {
+//            id = "${group}.spockpertestlogger"
+//            displayName = 'Spock Per-Test Logger Plugin'
+//            description = 'Spock extension that stores log output for each test in its own file on disk.'
+//            implementationClass = "${group}.spockpertestlogger.SpockPerTestLoggerPlugin"
+//            tags.set(['spock', 'spock framework', 'groovy', 'java', 'testing', 'test', 'logging', 'log', 'thefriendlycoder', 'tfc'])
+//        }
+//    }
+//}
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 //                                                      Functional Test Suite
 sourceSets {
     functionalTest {
+        groovy.srcDir "$projectDir/src/functionalTest/groovy"
+        //resources.srcDir "$projectDir/src/functionalTest/resources"
+        compileClasspath += main.output + test.output
+        runtimeClasspath += main.output + test.output
     }
 }
 
@@ -67,7 +87,7 @@ tasks.register('functionalTest', Test) {
     useJUnitPlatform()
 }
 
-gradlePlugin.testSourceSets(sourceSets.functionalTest)
+//gradlePlugin.testSourceSets(sourceSets.functionalTest)
 
 tasks.named('check') {
     // Run the functional tests as part of `check`

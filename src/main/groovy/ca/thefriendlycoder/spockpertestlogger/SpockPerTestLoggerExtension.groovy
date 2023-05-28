@@ -22,34 +22,36 @@ class SpockPerTestLoggerExtension implements IGlobalExtension {
     @Override
     void start() {
         // Clear LogBack config
+        println("Starting plugin...")
+        println("KSP log path is " + cfg.logPath)
+        return
         var tempCtx = LoggerFactory.getILoggerFactory()
         if (tempCtx instanceof LoggerContext) {
             lctx = (LoggerContext)tempCtx
         } else {
             // TODO: Add support for other logging frameworks like log4j
             println("Not supported logger type:" + tempCtx.class)
-            return
+            lctx = new LoggerContext()
+            //return
         }
         // TODO: Consider having a flag in config file that disables this reset logic
         //       ie: to allow users to configure logging in the environment instead
-        lctx.reset()
+        //lctx.reset()
 
         // Clear Java Logger JUL config
-        Logger l = Logger.getLogger("")
-        for (def h: l.handlers) {
-            l.removeHandler(h)
-        }
-
+//        Logger l = Logger.getLogger("")
+//        for (def h: l.handlers) {
+//            l.removeHandler(h)
+//        }
 
         def dir = Paths.get(cfg.logPath)
-        Files.walk(dir)
-          .sorted(Comparator.reverseOrder())
-          .map(Path::toFile)
-          .forEach(File::delete)
-
-        if (!Files.exists(dir)) {
-            Files.createDirectories(dir)
+        if (Files.exists(dir)) {
+            Files.walk(dir)
+                .sorted(Comparator.reverseOrder())
+                .map(Path::toFile)
+                .forEach(File::delete)
         }
+        Files.createDirectories(dir)
         if (!Files.isDirectory(dir)) {
             // TODO: see what exception type to throw here
             throw new Exception("Log path " + cfg.logPath + " is not a folder")
@@ -62,9 +64,9 @@ class SpockPerTestLoggerExtension implements IGlobalExtension {
 
     @Override
     void visitSpec(SpecInfo spec) {
-        for (def c : spec.features) {
-            c.addInterceptor(new Processor())
-        }
+//        for (def c : spec.features) {
+//            c.addInterceptor(new Processor())
+//        }
     }
 
 
@@ -72,15 +74,29 @@ class SpockPerTestLoggerExtension implements IGlobalExtension {
         @Override
         void intercept(IMethodInvocation invocation) throws Throwable {
 
-            if (lctx == null) {
-                return
-            }
+//            if (lctx == null) {
+//                invocation.proceed()
+//                return
+//            }
+
+//            var tempCtx = LoggerFactory.getILoggerFactory()
+//            def temp = tempCtx.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME)
+//            //OutputEventListenerBackedLoggerContext b = (OutputEventListenerBackedLoggerContext)tempCtx
+//            //def temp = LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME)
+//            if (!temp instanceof ch.qos.logback.classic.Logger) {
+//                throw new Exception("Unsupported logger type " + temp.class.toString())
+//            }
+//            println(temp.class)
+//            def root2 = (ch.qos.logback.classic.Logger)temp
+
 
             var outputFile = Paths.get(cfg.logPath, invocation.feature.spec.name, invocation.feature.name + ".txt").toFile()
             // Setup log format
             def msgPattern = cfg.logPattern
             PatternLayoutEncoder encoder = new PatternLayoutEncoder()
             encoder.setPattern(msgPattern)
+            //encoder.setContext(tempCtx)
+            //encoder.setContext(root.getLoggerContext())
             encoder.setContext(lctx)
             encoder.start()
 
@@ -89,19 +105,18 @@ class SpockPerTestLoggerExtension implements IGlobalExtension {
             fa.setAppend(true)
             fa.setEncoder(encoder)
             fa.setContext(lctx)
+            //fa.setContext(root.getLoggerContext())
+            //fa.setContext(tempCtx)
             fa.clearAllFilters()
             fa.setFile(outputFile.toString())
             fa.setName("test-appender")
             fa.start()
 
             // Configure the root logger
-            def temp = LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME)
-            if (!temp instanceof ch.qos.logback.classic.Logger) {
-                throw new Exception("Unsupported logger type " + temp.class.toString())
-            }
-            ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger)temp
+            //def root = (ch.qos.logback.classic.Logger)temp
+            //def root = new ch.qos.logback.classic.Logger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME, null, lctx)
+            def root = lctx.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME)
             root.addAppender(fa)
-
             root.setLevel(Level.ALL)
 
             try {

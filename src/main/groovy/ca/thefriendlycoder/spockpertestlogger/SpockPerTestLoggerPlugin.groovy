@@ -3,23 +3,26 @@
  */
 package ca.thefriendlycoder.spockpertestlogger
 
-import org.gradle.api.Project
-import org.gradle.api.Plugin
+//import org.gradle.api.Project
+//import org.gradle.api.Plugin
 
 /**
  * Entrypoint class for our plugin
  */
-class SpockPerTestLoggerPlugin implements Plugin<Project> {
-    void apply(Project project) {
-        // TODO: iterate over all collections that derive from "test" and add our plugin to it
-        /**
-         * Shows log output for failed tests
-         */
-        project.tasks.register("ptlShowErrors") {
-            doLast {
-                // TODO: iterate over all files in the log folder, and cat them to stdout
-                println("Showing test errors")
-            }
-        }
-    }
+//class SpockPerTestLoggerPlugin implements Plugin<Project> {
+//    void apply(Project project) {
+//        // TODO: iterate over all collections that derive from "test" and add our plugin to it
+//        /**
+//         * Shows log output for failed tests
+//         */
+//        project.tasks.register("ptlShowErrors") {
+//            doLast {
+//                // TODO: iterate over all files in the log folder, and cat them to stdout
+//                println("Showing test errors")
+//            }
+//        }
+//    }
+//}
+class SpockPerTestLoggerPlugin {
+
 }
