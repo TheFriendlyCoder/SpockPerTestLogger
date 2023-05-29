@@ -24,15 +24,16 @@ class SpockPerTestLoggerExtension implements IGlobalExtension {
         // Clear LogBack config
         println("Starting plugin...")
         println("KSP log path is " + cfg.logPath)
-        return
+//        return
         var tempCtx = LoggerFactory.getILoggerFactory()
         if (tempCtx instanceof LoggerContext) {
+            println("Got proper context")
             lctx = (LoggerContext)tempCtx
         } else {
-            // TODO: Add support for other logging frameworks like log4j
-            println("Not supported logger type:" + tempCtx.class)
+//            // TODO: Add support for other logging frameworks like log4j
+//            println("Not supported logger type:" + tempCtx.class)
             lctx = new LoggerContext()
-            //return
+//            //return
         }
         // TODO: Consider having a flag in config file that disables this reset logic
         //       ie: to allow users to configure logging in the environment instead
@@ -58,15 +59,16 @@ class SpockPerTestLoggerExtension implements IGlobalExtension {
         }
         // TODO: See how best to handle notification messages here
         //       maybe a good spot for Gradle lifetime logger
-        println("Using log folder " + cfg.logPath)
+        //println("Using log folder " + cfg.logPath)
 
     }
 
     @Override
     void visitSpec(SpecInfo spec) {
-//        for (def c : spec.features) {
-//            c.addInterceptor(new Processor())
-//        }
+        for (def c : spec.features) {
+            println("Processing fixture ${c.name}")
+            c.addInterceptor(new Processor())
+        }
     }
 
 
@@ -91,6 +93,7 @@ class SpockPerTestLoggerExtension implements IGlobalExtension {
 
 
             var outputFile = Paths.get(cfg.logPath, invocation.feature.spec.name, invocation.feature.name + ".txt").toFile()
+            println("Creating output file ${outputFile}")
             // Setup log format
             def msgPattern = cfg.logPattern
             PatternLayoutEncoder encoder = new PatternLayoutEncoder()
@@ -115,9 +118,12 @@ class SpockPerTestLoggerExtension implements IGlobalExtension {
             // Configure the root logger
             //def root = (ch.qos.logback.classic.Logger)temp
             //def root = new ch.qos.logback.classic.Logger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME, null, lctx)
-            def root = lctx.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME)
+            //def root = lctx.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME)
+            def root = lctx.getLogger("ca.thefriendlycoder.spockpertestlogger.SampleTest")
+            println("Updating logger ${root.name}")
             root.addAppender(fa)
             root.setLevel(Level.ALL)
+            root.info("KSP logged some stuff from the extension")
 
             try {
                 // Run the test
