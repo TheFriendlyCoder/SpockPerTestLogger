@@ -3,19 +3,11 @@
  */
 package ca.thefriendlycoder.spockpertestlogger
 
-import org.gradle.api.Project
-import org.gradle.api.Plugin
-
 /**
  * Entrypoint class for our plugin
  */
-class SpockPerTestLoggerPlugin implements Plugin<Project> {
-    void apply(Project project) {
-        // Register a task
-        project.tasks.register("greeting") {
-            doLast {
-                println("Hello from plugin 'spockpertestlogger.greeting'")
-            }
-        }
+class SpockPerTestLoggerPlugin {
+    void fn() {
+
     }
 }
