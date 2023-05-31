@@ -3,6 +3,14 @@
  */
 package ca.thefriendlycoder.spockpertestlogger
 
+import ca.thefriendlycoder.spockpertestlogger.samples.FeatureSetupTeardown
+import ca.thefriendlycoder.spockpertestlogger.samples.MultiFeatureTest
+import ca.thefriendlycoder.spockpertestlogger.samples.PassFailTest
+import ca.thefriendlycoder.spockpertestlogger.samples.SimpleDataTest
+import ca.thefriendlycoder.spockpertestlogger.samples.SimpleUnrolledDataTest
+import ca.thefriendlycoder.spockpertestlogger.samples.SpecSetupTeardown
+import ca.thefriendlycoder.spockpertestlogger.samples.SimpleTest
+import spock.lang.PendingFeature
 import spock.lang.Specification
 import spock.lang.Subject
 import spock.lang.TempDir
@@ -31,7 +39,7 @@ class SpockPerTestLoggerExtensionTest extends Specification {
         }
 
         when: "We try running the sample spec"
-        def results = specRunner.runClass(SampleTest)
+        def results = specRunner.runClass(SimpleTest)
 
         then: "The test suite should succeed without error"
         results.testEvents()
@@ -57,7 +65,7 @@ class SpockPerTestLoggerExtensionTest extends Specification {
         }
 
         when: "We try running the sample spec"
-        def results = specRunner.runClass(SampleTest)
+        def results = specRunner.runClass(SimpleTest)
 
         then: "The test suite should succeed without error"
         results.testEvents()
@@ -75,10 +83,10 @@ class SpockPerTestLoggerExtensionTest extends Specification {
             }
         }
         // Expected output data
-        def expPath = tempdir.resolve(Paths.get("SampleTest", "test method.log"))
+        def expPath = tempdir.resolve(Paths.get("SimpleTest", "test method.log"))
 
         when: "We try running the sample spec"
-        def results = specRunner.runClass(SampleTest)
+        def results = specRunner.runClass(SimpleTest)
 
         then: "The test suite should succeed without error"
         results.testEvents()
@@ -103,10 +111,10 @@ class SpockPerTestLoggerExtensionTest extends Specification {
             }
         }
         // Expected output data
-        def expPath = tempdir.resolve(Paths.get("SampleTest", "test method.log"))
+        def expPath = tempdir.resolve(Paths.get("SimpleTest", "test method.log"))
 
         when: "We try running the sample spec"
-        def results = specRunner.runClass(SampleTest)
+        def results = specRunner.runClass(SimpleTest)
 
         then: "The test suite should succeed without error"
         results.testEvents()
@@ -130,10 +138,10 @@ class SpockPerTestLoggerExtensionTest extends Specification {
             }
         }
         // Expected output data
-        def expPath = tempdir.resolve(Paths.get("SampleTest", "test method.log"))
+        def expPath = tempdir.resolve(Paths.get("SimpleTest", "test method.log"))
 
         when: "We try running the sample spec"
-        def results = specRunner.runClass(SampleTest)
+        def results = specRunner.runClass(SimpleTest)
 
         then: "The test suite should succeed without error"
         results.testEvents()
@@ -144,6 +152,227 @@ class SpockPerTestLoggerExtensionTest extends Specification {
         expPath.toFile().exists()
 
         and: "The log file contains the correct output"
-        expPath.toFile().text == "Inside fake unit test\n"
+        expPath.toFile().text == "${SimpleTest.expectedMessage}\n"
+    }
+
+    def "Test log file gets populated from feature setup and teardown"() {
+        given: "A sample Spock test spec"
+        def specRunner = new EmbeddedSpecRunner()
+        specRunner.throwFailure = false
+        specRunner.configurationScript {
+            PerTestLogger {
+                logPath tempdir.toString()
+            }
+        }
+        // Expected output data
+        def expPath = tempdir.resolve(Paths.get("FeatureSetupTeardown", "Test Feature.log"))
+
+        when: "We try running the sample spec"
+        def results = specRunner.runClass(FeatureSetupTeardown)
+
+        then: "The test suite should succeed without error"
+        results.testEvents()
+            .debug()
+            .assertStatistics(stats -> stats.failed(0))
+
+        and: "The log file should have been created by the plugin"
+        expPath.toFile().exists()
+
+        and: "The log file contains the correct output"
+        expPath.toFile().text.contains("${expectedMessage}")
+
+        where:
+        expectedMessage                      | _
+        FeatureSetupTeardown.setupMessage    | _
+        FeatureSetupTeardown.teardownMessage | _
+    }
+
+    @PendingFeature(reason = "Add support for spec-wide log capture")
+    def "Test log file gets populated from specification setup and teardown"() {
+        given: "A sample Spock test spec"
+        def specRunner = new EmbeddedSpecRunner()
+        specRunner.throwFailure = false
+        specRunner.configurationScript {
+            PerTestLogger {
+                logPath tempdir.toString()
+            }
+        }
+        // Expected output data
+        def expPath = tempdir.resolve(Paths.get("SpecSetupTeardown", "Test Feature.log"))
+
+        when: "We try running the sample spec"
+        def results = specRunner.runClass(SpecSetupTeardown)
+
+        then: "The test suite should succeed without error"
+        results.testEvents()
+            .debug()
+            .assertStatistics(stats -> stats.failed(0))
+
+        and: "The log file should have been created by the plugin"
+        expPath.toFile().exists()
+
+        and: "The log file contains the correct output"
+        expPath.toFile().text.contains("${expectedMessage}")
+
+        where:
+        expectedMessage                   | _
+        SpecSetupTeardown.setupMessage    | _
+        SpecSetupTeardown.teardownMessage | _
+    }
+
+    @PendingFeature(reason = "Add support for namespaces to log path / file")
+    def "Test log file clashes between packages"() {
+        given: "A sample Spock test spec"
+        def specRunner = new EmbeddedSpecRunner()
+        specRunner.throwFailure = false
+        specRunner.configurationScript {
+            PerTestLogger {
+                logPath tempdir.toString()
+            }
+        }
+        // Expected output data
+        def expPath1 = tempdir.resolve(Paths.get("MyTest", "test method.log"))
+        def expPath2 = tempdir.resolve(Paths.get("MyTest", "test method.log"))
+
+        when: "We try running the sample spec"
+        def results = specRunner.runClasses(List.of(ca.thefriendlycoder.spockpertestlogger.samples.subpackage1.MyTest, ca.thefriendlycoder.spockpertestlogger.samples.subpackage2.MyTest))
+
+        then: "The test suite should succeed without error"
+        results.testEvents()
+            .debug()
+            .assertStatistics(stats -> stats.failed(0))
+
+        and: "The log file should have been created by the plugin"
+        verifyAll {
+            expPath1.toFile().exists()
+            expPath2.toFile().exists()
+        }
+
+        and: "The log file contains the correct output"
+        verifyAll {
+            expPath1.toFile().text == "${ca.thefriendlycoder.spockpertestlogger.samples.subpackage1.MyTest.expectedMessage}\n"
+            expPath2.toFile().text == "${ca.thefriendlycoder.spockpertestlogger.samples.subpackage2.MyTest.expectedMessage}\n"
+        }
+    }
+
+    @PendingFeature(reason = "Add support for deleting logs for passing tests")
+    def "Test log file deletion on success"() {
+        given: "A sample Spock test spec"
+        def specRunner = new EmbeddedSpecRunner()
+        specRunner.throwFailure = false
+        specRunner.configurationScript {
+            PerTestLogger {
+                logPath tempdir.toString()
+            }
+        }
+        // Expected output data
+        def expPath1 = tempdir.resolve(Paths.get("PassFailTest", "Passing Test.log"))
+        def expPath2 = tempdir.resolve(Paths.get("PassFailTest", "Failing Test.log"))
+
+        when: "We try running the sample spec"
+        def results = specRunner.runClass(PassFailTest)
+
+        then: "The test suite should produce one error"
+        results.testEvents()
+            .debug()
+            .assertStatistics(stats -> stats.failed(1))
+
+        and: "The log file should have been created by the plugin"
+        verifyAll {
+            !expPath1.toFile().exists()
+            expPath2.toFile().exists()
+        }
+
+        and: "The log file contains the correct output"
+        expPath2.toFile().text == "${PassFailTest.failMessage}\n"
+    }
+
+    @PendingFeature(reason = "Add support for data driven tests")
+    def "Test unique log files for data driven test"() {
+        given: "A sample Spock test spec"
+        def specRunner = new EmbeddedSpecRunner()
+        specRunner.throwFailure = false
+        specRunner.configurationScript {
+            PerTestLogger {
+                logPath tempdir.toString()
+            }
+        }
+        // Expected output data
+        def expPath1 = tempdir.resolve(Paths.get(testName, "Data Test1.log"))
+        def expPath2 = tempdir.resolve(Paths.get(testName, "Data Test2.log"))
+
+        when: "We try running the sample spec"
+        def results = specRunner.runClass(testClass)
+
+        then: "The test suite should produce one error"
+        results.testEvents()
+            .debug()
+            .assertStatistics(stats -> stats.failed(2))
+
+        and: "Two log files should have been created by the plugin"
+        verifyAll {
+            expPath1.toFile().exists()
+            expPath2.toFile().exists()
+        }
+
+        and: "Each log file should have the appropriate contents"
+        verifyAll {
+            expPath1.toFile().text == "${testClass.firstMessage}\n"
+            expPath2.toFile().text == "${testClass.secondMessage}\n"
+        }
+
+        where:
+        testName | testClass
+        "SimpleDataTest" | SimpleDataTest
+        "SimpleUnrolledDataTest" | SimpleUnrolledDataTest
+    }
+
+    @PendingFeature(reason = "Find a way to filter log messages based on thread")
+    def "Test log files generate properly when run in parallel"() {
+        given: "A sample Spock test spec"
+        def specRunner = new EmbeddedSpecRunner()
+        specRunner.throwFailure = false
+        specRunner.configurationScript {
+            runner {
+                parallel {
+                    enabled true
+                }
+            }
+            PerTestLogger {
+                logPath tempdir.toString()
+            }
+        }
+        // Expected output data
+        def expPath1 = tempdir.resolve(Paths.get("MultiFeatureTest", "First Test.log"))
+        def expPath2 = tempdir.resolve(Paths.get("MultiFeatureTest", "Second Test.log"))
+        def expPath3 = tempdir.resolve(Paths.get("MultiFeatureTest", "Third Test.log"))
+        def expPath4 = tempdir.resolve(Paths.get("MultiFeatureTest", "Fourth Test.log"))
+        def expPath5 = tempdir.resolve(Paths.get("MultiFeatureTest", "Fifth Test.log"))
+
+        when: "We try running the sample spec"
+        def results = specRunner.runClass(MultiFeatureTest)
+
+        then: "The test suite should succeed without error"
+        results.testEvents()
+            .debug()
+            .assertStatistics(stats -> stats.failed(0))
+
+        and: "All log files should have been created by the plugin"
+        verifyAll {
+            expPath1.toFile().exists()
+            expPath2.toFile().exists()
+            expPath3.toFile().exists()
+            expPath4.toFile().exists()
+            expPath5.toFile().exists()
+        }
+
+        and: "The log files should contains the correct output"
+        verifyAll {
+            expPath1.toFile().text == "${MultiFeatureTest.expectedMessage1}\n"
+            expPath2.toFile().text == "${MultiFeatureTest.expectedMessage2}\n"
+            expPath3.toFile().text == "${MultiFeatureTest.expectedMessage3}\n"
+            expPath4.toFile().text == "${MultiFeatureTest.expectedMessage4}\n"
+            expPath5.toFile().text == "${MultiFeatureTest.expectedMessage5}\n"
+        }
     }
 }
