@@ -19,16 +19,26 @@ repositories {
     // Use Maven Central for resolving dependencies.
     mavenCentral()
 }
+def junitVersion = "5.8.1"
+
 dependencies {
     // https://mvnrepository.com/artifact/org.spockframework/spock-core
+    // Dependencies required by test framework
     testImplementation group: 'org.spockframework', name: 'spock-core', version: '2.4-M1-groovy-3.0'
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
+    testImplementation "org.junit.platform:junit-platform-testkit:1.10+"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter:${junitVersion}"
+
 
     // Use the latest Groovy version for building this library
     implementation 'org.codehaus.groovy:groovy-all:3.0.17'
+    // Needed for the Spock plugin
+    implementation ("org.spockframework:spock-core:2.0-groovy-3.0")
 
 }
 
 group = 'ca.thefriendlycoder'
+
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 //                                                              Jacoco Config
@@ -47,22 +57,27 @@ jacocoTestReport {
         xml.required = true
     }
 }
-//jacocoTestCoverageVerification {
-//    violationRules {
-//        rule {
-//            limit {
-//                // Require at least 80% coverage overall
-//                minimum = 0.8
-//            }
-//        }
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                // overall / average code coverage
+                minimum = 0.9
+            }
+        }
 //        rule {
 //            element = 'CLASS'
 //            limit {
-//                // Require each class to have at least 40% coverage
-//                // independent of the total coverage
-//                minimum = 0.4
+//                // each class should have at least this coverage
+//                minimum = 0.9
 //            }
 //        }
-//    }
-//}
+    }
+}
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+
+test {
+    useJUnitPlatform()
+    exclude '**/*SampleTest*'
+}
