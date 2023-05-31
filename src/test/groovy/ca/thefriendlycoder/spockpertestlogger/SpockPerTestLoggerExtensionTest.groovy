@@ -64,4 +64,29 @@ class SpockPerTestLoggerExtensionTest extends Specification {
             .debug()
             .assertStatistics(stats -> stats.failed(0))
     }
+
+    def "Test log file gets created"() {
+        given: "A temp folder that doesn't already exist"
+        def expPath = tempdir.resolve(Paths.get("SampleTest", "test method.log"))
+
+        and: "A sample Spock test spec"
+        def specRunner = new EmbeddedSpecRunner()
+        specRunner.throwFailure = false
+        specRunner.configurationScript {
+            PerTestLogger {
+                logPath tempdir.toString()
+            }
+        }
+
+        when: "We try running the sample spec"
+        def results = specRunner.runClass(SampleTest)
+
+        then: "The test suite should succeed without error"
+        results.testEvents()
+            .debug()
+            .assertStatistics(stats -> stats.failed(0))
+
+        and: "The log file should have been created by the plugin"
+        expPath.toFile().exists()
+    }
 }
