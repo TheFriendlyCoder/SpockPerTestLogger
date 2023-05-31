@@ -66,10 +66,7 @@ class SpockPerTestLoggerExtensionTest extends Specification {
     }
 
     def "Test log file gets created"() {
-        given: "A temp folder that doesn't already exist"
-        def expPath = tempdir.resolve(Paths.get("SampleTest", "test method.log"))
-
-        and: "A sample Spock test spec"
+        given: "A sample Spock test spec"
         def specRunner = new EmbeddedSpecRunner()
         specRunner.throwFailure = false
         specRunner.configurationScript {
@@ -77,6 +74,8 @@ class SpockPerTestLoggerExtensionTest extends Specification {
                 logPath tempdir.toString()
             }
         }
+        // Expected output data
+        def expPath = tempdir.resolve(Paths.get("SampleTest", "test method.log"))
 
         when: "We try running the sample spec"
         def results = specRunner.runClass(SampleTest)
@@ -87,6 +86,37 @@ class SpockPerTestLoggerExtensionTest extends Specification {
             .assertStatistics(stats -> stats.failed(0))
 
         and: "The log file should have been created by the plugin"
+        expPath.toFile().exists()
+    }
+
+    def "Test log folder gets recreated"() {
+        given: "A temp folder that contains dirty data"
+        def testFile = tempdir.resolve("fubar.log").toFile()
+        testFile.createNewFile()
+
+        and: "A sample Spock test spec"
+        def specRunner = new EmbeddedSpecRunner()
+        specRunner.throwFailure = false
+        specRunner.configurationScript {
+            PerTestLogger {
+                logPath tempdir.toString()
+            }
+        }
+        // Expected output data
+        def expPath = tempdir.resolve(Paths.get("SampleTest", "test method.log"))
+
+        when: "We try running the sample spec"
+        def results = specRunner.runClass(SampleTest)
+
+        then: "The test suite should succeed without error"
+        results.testEvents()
+            .debug()
+            .assertStatistics(stats -> stats.failed(0))
+
+        and: "The dirty log data should no longer exist"
+        !testFile.exists()
+
+        and: "New test output should be created in its place"
         expPath.toFile().exists()
     }
 }

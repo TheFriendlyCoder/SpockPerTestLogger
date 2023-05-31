@@ -4,10 +4,14 @@ import org.spockframework.runtime.extension.IGlobalExtension
 import org.spockframework.runtime.model.SpecInfo
 
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
 
 /**
  * Entrypoint class for the Spock extension
+ *
+ * For details on how this class works, see the Spock extension docs here:
+ *      https://spockframework.org/spock/docs/2.3/extensions.html#_global_extensions
  */
 class SpockPerTestLoggerExtension implements IGlobalExtension {
     ConfigFile cfg
@@ -18,9 +22,14 @@ class SpockPerTestLoggerExtension implements IGlobalExtension {
     @Override
     void start() {
         def dir = Paths.get(cfg.logPath)
-        if (!Files.exists(dir)) {
-            Files.createDirectories(dir)
+        if (Files.exists(dir)) {
+            Files.walk(dir)
+                .sorted(Comparator.reverseOrder())
+                .map(Path::toFile)
+                .forEach(File::delete)
         }
+
+        Files.createDirectories(dir)
     }
 
     /**
