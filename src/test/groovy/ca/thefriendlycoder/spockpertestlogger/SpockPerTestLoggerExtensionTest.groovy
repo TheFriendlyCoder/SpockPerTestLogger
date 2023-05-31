@@ -119,4 +119,31 @@ class SpockPerTestLoggerExtensionTest extends Specification {
         and: "New test output should be created in its place"
         expPath.toFile().exists()
     }
+
+    def "Test log file gets populated"() {
+        given: "A sample Spock test spec"
+        def specRunner = new EmbeddedSpecRunner()
+        specRunner.throwFailure = false
+        specRunner.configurationScript {
+            PerTestLogger {
+                logPath tempdir.toString()
+            }
+        }
+        // Expected output data
+        def expPath = tempdir.resolve(Paths.get("SampleTest", "test method.log"))
+
+        when: "We try running the sample spec"
+        def results = specRunner.runClass(SampleTest)
+
+        then: "The test suite should succeed without error"
+        results.testEvents()
+            .debug()
+            .assertStatistics(stats -> stats.failed(0))
+
+        and: "The log file should have been created by the plugin"
+        expPath.toFile().exists()
+
+        and: "The log file contains the correct output"
+        expPath.toFile().text == "Inside fake unit test\n"
+    }
 }

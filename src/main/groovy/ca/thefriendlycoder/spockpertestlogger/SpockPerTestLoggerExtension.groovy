@@ -15,12 +15,14 @@ import java.nio.file.Paths
  */
 class SpockPerTestLoggerExtension implements IGlobalExtension {
     ConfigFile cfg
+    LogManager logManager
 
     /**
      * Callback that runs as soon as the Spock framework launches
      */
     @Override
     void start() {
+        // Make sure our log folder exists and any historic data is purged
         def dir = Paths.get(cfg.logPath)
         if (Files.exists(dir)) {
             Files.walk(dir)
@@ -30,6 +32,10 @@ class SpockPerTestLoggerExtension implements IGlobalExtension {
         }
 
         Files.createDirectories(dir)
+
+        // Initialize or log manager instance, so its ready for capturing log
+        // output later
+        this.logManager = new LogManager(Paths.get(cfg.logPath), "%msg%n")
     }
 
     /**
@@ -44,7 +50,7 @@ class SpockPerTestLoggerExtension implements IGlobalExtension {
     @Override
     void visitSpec(SpecInfo spec) {
         for (def c : spec.features) {
-            c.addInterceptor(new LogProcessor(cfg))
+            c.addInterceptor(new LogProcessor(logManager))
         }
     }
 
