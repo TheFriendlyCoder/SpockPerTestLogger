@@ -3,9 +3,6 @@ package ca.thefriendlycoder.spockpertestlogger
 import org.spockframework.runtime.extension.IMethodInterceptor
 import org.spockframework.runtime.extension.IMethodInvocation
 
-import java.nio.file.Files
-import java.nio.file.Paths
-
 /**
  * Log manager which is executed for each feature selected for the current test run
  *
@@ -13,15 +10,14 @@ import java.nio.file.Paths
  *      https://spockframework.org/spock/docs/2.3/extensions.html#_interceptors
  */
 class LogProcessor implements IMethodInterceptor {
-    private final ConfigFile cfg
-
+    private final LogManager logManager
     /**
      * Constructor
      *
-     * @param cfg reference to the application config parsed from the Spock config file
+     * @param logManager object which controls the capturing of log output for the test suite
      */
-    LogProcessor(ConfigFile cfg) {
-        this.cfg = cfg
+    LogProcessor(LogManager logManager) {
+        this.logManager = logManager
     }
 
     /**
@@ -32,13 +28,12 @@ class LogProcessor implements IMethodInterceptor {
      */
     @Override
     void intercept(IMethodInvocation invocation) throws Throwable {
-        // Construct a fake log file
-        var outputFile = Paths.get(cfg.logPath, invocation.feature.spec.name, invocation.feature.name + ".log").toFile()
-        Files.createDirectories(outputFile.parentFile.toPath())
-        outputFile.createNewFile()
-        println("KSP: " + outputFile)
-
-        // Run the test
-        invocation.proceed()
+        logManager.configureLogger(invocation.feature.spec.name, invocation.feature.name)
+        try {
+            // Run the test
+            invocation.proceed()
+        } finally {
+            logManager.reset()
+        }
     }
 }
