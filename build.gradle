@@ -81,5 +81,5 @@ jacocoTestCoverageVerification {
 
 test {
     useJUnitPlatform()
-    exclude '**/*SampleTest*'
+    exclude '**/samples/**'
 }
