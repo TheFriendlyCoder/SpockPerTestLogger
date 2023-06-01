@@ -25,6 +25,8 @@ class SpockPerTestLoggerExtensionTest extends Specification {
     @TempDir
     Path tempdir
 
+    static String namespaceRoot = "ca.thefriendlycoder.spockpertestlogger.samples"
+
     def "Test log folder gets created"() {
         given: "A temp folder that doesn't already exist"
         def expPath = tempdir.resolve("fubar")
@@ -83,7 +85,7 @@ class SpockPerTestLoggerExtensionTest extends Specification {
             }
         }
         // Expected output data
-        def expPath = tempdir.resolve(Paths.get("SimpleTest", "test method.log"))
+        def expPath = tempdir.resolve(Paths.get("${namespaceRoot}.SimpleTest", "test method.log"))
 
         when: "We try running the sample spec"
         def results = specRunner.runClass(SimpleTest)
@@ -111,7 +113,7 @@ class SpockPerTestLoggerExtensionTest extends Specification {
             }
         }
         // Expected output data
-        def expPath = tempdir.resolve(Paths.get("SimpleTest", "test method.log"))
+        def expPath = tempdir.resolve(Paths.get("${namespaceRoot}.SimpleTest", "test method.log"))
 
         when: "We try running the sample spec"
         def results = specRunner.runClass(SimpleTest)
@@ -138,7 +140,7 @@ class SpockPerTestLoggerExtensionTest extends Specification {
             }
         }
         // Expected output data
-        def expPath = tempdir.resolve(Paths.get("SimpleTest", "test method.log"))
+        def expPath = tempdir.resolve(Paths.get("${namespaceRoot}.SimpleTest", "test method.log"))
 
         when: "We try running the sample spec"
         def results = specRunner.runClass(SimpleTest)
@@ -165,7 +167,7 @@ class SpockPerTestLoggerExtensionTest extends Specification {
             }
         }
         // Expected output data
-        def expPath = tempdir.resolve(Paths.get("FeatureSetupTeardown", "Test Feature.log"))
+        def expPath = tempdir.resolve(Paths.get("${namespaceRoot}.FeatureSetupTeardown", "Test Feature.log"))
 
         when: "We try running the sample spec"
         def results = specRunner.runClass(FeatureSetupTeardown)
@@ -220,7 +222,6 @@ class SpockPerTestLoggerExtensionTest extends Specification {
         SpecSetupTeardown.teardownMessage | _
     }
 
-    @PendingFeature(reason = "Add support for namespaces to log path / file")
     def "Test log file clashes between packages"() {
         given: "A sample Spock test spec"
         def specRunner = new EmbeddedSpecRunner()
@@ -231,8 +232,8 @@ class SpockPerTestLoggerExtensionTest extends Specification {
             }
         }
         // Expected output data
-        def expPath1 = tempdir.resolve(Paths.get("MyTest", "test method.log"))
-        def expPath2 = tempdir.resolve(Paths.get("MyTest", "test method.log"))
+        def expPath1 = tempdir.resolve(Paths.get("${namespaceRoot}.subpackage1.MyTest", "test method.log"))
+        def expPath2 = tempdir.resolve(Paths.get("${namespaceRoot}.subpackage2.MyTest", "test method.log"))
 
         when: "We try running the sample spec"
         def results = specRunner.runClasses(List.of(ca.thefriendlycoder.spockpertestlogger.samples.subpackage1.MyTest, ca.thefriendlycoder.spockpertestlogger.samples.subpackage2.MyTest))

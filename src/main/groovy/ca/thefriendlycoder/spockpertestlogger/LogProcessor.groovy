@@ -28,7 +28,7 @@ class LogProcessor implements IMethodInterceptor {
      */
     @Override
     void intercept(IMethodInvocation invocation) throws Throwable {
-        logManager.configureLogger(invocation.feature.spec.name, invocation.feature.name)
+        logManager.configureLogger(invocation.feature.parent.pkg, invocation.feature.spec.name, invocation.feature.name)
         try {
             // Run the test
             invocation.proceed()

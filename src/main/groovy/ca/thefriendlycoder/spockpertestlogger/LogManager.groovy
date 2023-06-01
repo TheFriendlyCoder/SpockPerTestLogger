@@ -56,12 +56,13 @@ class LogManager {
      * A new log file, named after the currently running test, will be generated
      * in the log folder provided in the config
      *
+     * @param packageName namespace of the package containing the test spec
      * @param specName the name of the Spock specification currently running
      * @param featureName the name of the Spock feature currently running
      */
-    void configureLogger(String specName, String featureName) {
-        var outputFile = logPath.resolve(Paths.get(specName, featureName + ".log")).toFile()
-
+    void configureLogger(String packageName, String specName, String featureName) {
+        var outputFile = logPath.resolve(Paths.get("${packageName}.${specName}", featureName + ".log")).toFile()
+        println("Output file " + outputFile.toString())
         // Configure file appender
         lastAppender = new FileAppender()
         lastAppender.setAppend(true)
