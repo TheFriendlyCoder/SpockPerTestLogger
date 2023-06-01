@@ -1,6 +1,7 @@
 package ca.thefriendlycoder.spockpertestlogger
 
 import org.spockframework.runtime.extension.IGlobalExtension
+import org.spockframework.runtime.model.FeatureInfo
 import org.spockframework.runtime.model.SpecInfo
 
 import java.nio.file.Files
@@ -49,9 +50,15 @@ class SpockPerTestLoggerExtension implements IGlobalExtension {
      */
     @Override
     void visitSpec(SpecInfo spec) {
-        for (def c : spec.features) {
-            c.addInterceptor(new LogProcessor(logManager))
+        for (def f : spec.features) {
+            if (f.dataVariables.size() > 0) {
+                // If the feature is a data-drive test we need to register
+                // our processor with a slightly different interceptor so
+                // that it is invoked once for each iteration of the test
+                f.addIterationInterceptor(new LogProcessor(logManager))
+            } else {
+                f.addInterceptor(new LogProcessor(logManager))
+            }
         }
     }
-
 }

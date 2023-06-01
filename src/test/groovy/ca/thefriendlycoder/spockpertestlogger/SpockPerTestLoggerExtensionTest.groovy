@@ -288,7 +288,6 @@ class SpockPerTestLoggerExtensionTest extends Specification {
         expPath2.toFile().text == "${PassFailTest.failMessage}\n"
     }
 
-    @PendingFeature(reason = "Add support for data driven tests")
     def "Test unique log files for data driven test"() {
         given: "A sample Spock test spec"
         def specRunner = new EmbeddedSpecRunner()
@@ -299,8 +298,8 @@ class SpockPerTestLoggerExtensionTest extends Specification {
             }
         }
         // Expected output data
-        def expPath1 = tempdir.resolve(Paths.get(testName, "Data Test1.log"))
-        def expPath2 = tempdir.resolve(Paths.get(testName, "Data Test2.log"))
+        def expPath1 = tempdir.resolve(Paths.get("${namespaceRoot}.${testName}", "Data Test0.log"))
+        def expPath2 = tempdir.resolve(Paths.get("${namespaceRoot}.${testName}", "Data Test1.log"))
 
         when: "We try running the sample spec"
         def results = specRunner.runClass(testClass)
@@ -308,7 +307,7 @@ class SpockPerTestLoggerExtensionTest extends Specification {
         then: "The test suite should produce one error"
         results.testEvents()
             .debug()
-            .assertStatistics(stats -> stats.failed(2))
+            .assertStatistics(stats -> stats.failed(0))
 
         and: "Two log files should have been created by the plugin"
         verifyAll {
