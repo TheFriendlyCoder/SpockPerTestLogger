@@ -42,7 +42,6 @@ class LogProcessor implements IMethodInterceptor {
             // TODO: add a flag to disable the plugin to config parser so we can disable plugin inside this test suite
             // TODO: test publishing logic
             // TODO: add support for jar signing - needed for Maven publish
-            // TODO: add spotless support with validation
             // TODO: generate API docs
             // TODO: generate user docs (mkdocs)
             // Enhancements

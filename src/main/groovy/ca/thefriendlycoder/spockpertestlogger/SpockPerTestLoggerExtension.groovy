@@ -1,12 +1,11 @@
 package ca.thefriendlycoder.spockpertestlogger
 
-import org.spockframework.runtime.extension.IGlobalExtension
-import org.spockframework.runtime.model.FeatureInfo
-import org.spockframework.runtime.model.SpecInfo
-
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import org.spockframework.runtime.extension.IGlobalExtension
+import org.spockframework.runtime.model.FeatureInfo
+import org.spockframework.runtime.model.SpecInfo
 
 /**
  * Entrypoint class for the Spock extension

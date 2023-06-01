@@ -5,10 +5,9 @@ import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.LoggerContext
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder
 import ch.qos.logback.core.FileAppender
-import org.slf4j.LoggerFactory
-
 import java.nio.file.Path
 import java.nio.file.Paths
+import org.slf4j.LoggerFactory
 
 /**
  * This class manages the manipulation of different Java logging subsystems
