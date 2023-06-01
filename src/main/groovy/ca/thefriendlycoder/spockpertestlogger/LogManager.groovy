@@ -59,10 +59,40 @@ class LogManager {
      * @param packageName namespace of the package containing the test spec
      * @param specName the name of the Spock specification currently running
      * @param featureName the name of the Spock feature currently running
+     * @param iteration numeric index of the data driven test being executed
+     */
+    void configureLogger(String packageName, String specName, String featureName, int iteration) {
+        var outputFile = logPath.resolve(Paths.get("${packageName}.${specName}", featureName + iteration.toString() + ".log")).toFile()
+        setupLogger(outputFile)
+    }
+
+    /**
+     * Begins capturing log output for a test feature
+     *
+     * This method injects a custom logger into the root namespace and sets it
+     * to capture ALL log output from all sources, ensuring the maximum verbosity
+     * of log output is captured
+     *
+     * A new log file, named after the currently running test, will be generated
+     * in the log folder provided in the config
+     *
+     * @param packageName namespace of the package containing the test spec
+     * @param specName the name of the Spock specification currently running
+     * @param featureName the name of the Spock feature currently running
      */
     void configureLogger(String packageName, String specName, String featureName) {
         var outputFile = logPath.resolve(Paths.get("${packageName}.${specName}", featureName + ".log")).toFile()
-        println("Output file " + outputFile.toString())
+        setupLogger(outputFile)
+    }
+
+    /**
+     * Helper method that configures our test-specific file logger
+     *
+     * @param outputFile path to the log file to be created
+     */
+    private void setupLogger(File outputFile) {
+        //println("Creating log file ${outputFile}")
+
         // Configure file appender
         lastAppender = new FileAppender()
         lastAppender.setAppend(true)

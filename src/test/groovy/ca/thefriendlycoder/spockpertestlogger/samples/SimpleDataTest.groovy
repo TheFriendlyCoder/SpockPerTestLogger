@@ -14,7 +14,7 @@ class SimpleDataTest extends Specification {
     def "Data Test"() {
         expect:
         LoggerFactory.getLogger(SimpleDataTest.class).info(message)
-        a + b < 0
+        a + b > 0
 
         where:
         a | b | message

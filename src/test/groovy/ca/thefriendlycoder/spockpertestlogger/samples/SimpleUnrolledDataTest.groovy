@@ -19,7 +19,7 @@ class SimpleUnrolledDataTest extends Specification {
     def "Data Test"() {
         expect:
         LoggerFactory.getLogger(SimpleUnrolledDataTest.class).info(message)
-        a + b < 0
+        a + b > 0
 
         where:
         a | b | message

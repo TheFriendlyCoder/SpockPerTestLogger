@@ -28,14 +28,18 @@ class LogProcessor implements IMethodInterceptor {
      */
     @Override
     void intercept(IMethodInvocation invocation) throws Throwable {
-        logManager.configureLogger(invocation.feature.parent.pkg, invocation.feature.spec.name, invocation.feature.name)
+        if (invocation.iteration.dataVariables.size() > 0) {
+            logManager.configureLogger(invocation.feature.parent.pkg, invocation.feature.spec.name, invocation.feature.name, invocation.iteration.iterationIndex)
+        } else {
+            logManager.configureLogger(invocation.feature.parent.pkg, invocation.feature.spec.name, invocation.feature.name)
+        }
+
         try {
             // Run the test
             invocation.proceed()
         } finally {
             // V1 release:
-            // TODO: See what happens if we have 2 tests with same name in different sub-packages
-            // TODO: Test with data driven test - both with rolled and unrolled test names
+            // TODO: add a flag to disable the plugin to config parser so we can disable plugin inside this test suite
             // TODO: test publishing logic
             // TODO: add support for jar signing - needed for Maven publish
             // TODO: add spotless support with validation
