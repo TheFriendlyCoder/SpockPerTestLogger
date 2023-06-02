@@ -7,18 +7,17 @@ import ca.thefriendlycoder.spockpertestlogger.samples.FeatureSetupTeardown
 import ca.thefriendlycoder.spockpertestlogger.samples.MultiFeatureTest
 import ca.thefriendlycoder.spockpertestlogger.samples.PassFailTest
 import ca.thefriendlycoder.spockpertestlogger.samples.SimpleDataTest
+import ca.thefriendlycoder.spockpertestlogger.samples.SimpleTest
 import ca.thefriendlycoder.spockpertestlogger.samples.SimpleUnrolledDataTest
 import ca.thefriendlycoder.spockpertestlogger.samples.SpecSetupTeardown
-import ca.thefriendlycoder.spockpertestlogger.samples.SimpleTest
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 import spock.lang.PendingFeature
 import spock.lang.Specification
 import spock.lang.Subject
 import spock.lang.TempDir
 import spock.util.EmbeddedSpecRunner
-
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
 
 @Subject(SpockPerTestLoggerExtension)
 class SpockPerTestLoggerExtensionTest extends Specification {
