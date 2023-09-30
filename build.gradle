@@ -17,38 +17,47 @@ plugins {
     // automatic code formatting
     id "com.diffplug.spotless" version "6.19.0"
     // sign our deliverables as required by Maven Central
+    // https://central.sonatype.org/publish/publish-gradle/
     id 'signing'
+    id 'maven-publish'
 }
 repositories {
     // Use Maven Central for resolving dependencies.
     mavenCentral()
 }
-def junitVersion = "5.8.1"
 
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+//                                                                Global Defs
+def junitVersion = "5.8.1"
+group = 'ca.thefriendlycoder'
+
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+//                                                               Dependencies
 dependencies {
     // https://mvnrepository.com/artifact/org.spockframework/spock-core
     // Dependencies required by test framework
     testImplementation group: 'org.spockframework', name: 'spock-core', version: '2.4-M1-groovy-3.0'
-    testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
-    testImplementation "org.junit.platform:junit-platform-testkit:1.10+"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter:${junitVersion}"
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: junitVersion
+    testImplementation group: 'org.junit.platform', name: 'junit-platform-testkit', version: '1.10+'
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter', version: junitVersion
 
 
     // Use the latest Groovy version for building this library
-    implementation 'org.codehaus.groovy:groovy-all:3.0.17'
+    implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: '3.0.17'
+
     // Needed for the Spock plugin
-    implementation ("org.spockframework:spock-core:2.0-groovy-3.0")
+    implementation group: 'org.spockframework', name: 'spock-core', version: '2.0-groovy-3.0'
     implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.4.7'
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.7'
 
 }
 
-group = 'ca.thefriendlycoder'
-
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-//                                                              Jacoco Config
+//                                                                    Testing
 test {
+    useJUnitPlatform()
+    exclude '**/samples/**'
     // run coverage report after test run
     finalizedBy jacocoTestReport
 }
@@ -106,9 +115,73 @@ spotless {
         formatAnnotations()
     }
 }
-
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-test {
-    useJUnitPlatform()
-    exclude '**/samples/**'
+//                                                   Maven Central Publishing
+java {
+    // Publish API docs and debug sources
+    withJavadocJar()
+    withSourcesJar()
 }
+// Publish HTML formatted docs
+javadoc {
+    if(JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html5', true)
+    }
+}
+signing {
+    sign configurations.archives
+    //sign publishing.publications.mavenJava
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = 'SpockPerTestLogger'
+            from components.java
+            versionMapping {
+                usage('java-api') {
+                    fromResolutionOf('runtimeClasspath')
+                }
+                usage('java-runtime') {
+                    fromResolutionResult()
+                }
+            }
+            pom {
+                name = 'Spock Per-Test Logger'
+                description = 'Extension for the Spock testing framework that captures log output from each test feature and serializes it to disk. Each test will produce a separate log file.'
+                url = 'https://github.com/TheFriendlyCoder/SpockPerTestLogger'
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'kevinp'
+                        name = 'Kevin Phillips'
+                        email = 'kevin@thefriendlycoder.com'
+                    }
+                }
+                scm {
+                    connection = 'git@github.com:TheFriendlyCoder/SpockPerTestLogger.git'
+                    developerConnection = 'git@github.com:TheFriendlyCoder/SpockPerTestLogger.git'
+                    url = 'https://github.com/TheFriendlyCoder/SpockPerTestLogger'
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            // change URLs to point to your repos, e.g. http://my.org/repo
+//            def releasesRepoUrl = layout.buildDirectory.dir('repos/releases')
+//            def snapshotsRepoUrl = layout.buildDirectory.dir('repos/snapshots')
+            def snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+            def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            def isSnapshot = version.toString().contains('uncommitted') || version.toString.endsWith('SNAPSHOT')
+            url = isSnapshot ? snapshotsRepoUrl : releasesRepoUrl
+        }
+    }
+}
+
+
